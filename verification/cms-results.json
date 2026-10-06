@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-09-13T19:50:45.738Z",
+  "checks": [
+    {
+      "name": "Anonymous content access is rejected",
+      "passed": true
+    },
+    {
+      "name": "Cross-origin mutation is rejected",
+      "passed": true
+    },
+    {
+      "name": "Draft creation succeeds",
+      "passed": true
+    },
+    {
+      "name": "Draft persists after a fresh read",
+      "passed": true
+    },
+    {
+      "name": "Draft is excluded from public page",
+      "passed": true
+    },
+    {
+      "name": "Image upload succeeds",
+      "passed": true
+    },
+    {
+      "name": "Unpublished image is private",
+      "passed": true
+    },
+    {
+      "name": "Administrator can preview uploaded image",
+      "passed": true
+    },
+    {
+      "name": "Publication succeeds",
+      "passed": true
+    },
+    {
+      "name": "Published category appears on public page",
+      "passed": true
+    },
+    {
+      "name": "Published image is publicly available",
+      "passed": true
+    },
+    {
+      "name": "Hiding succeeds",
+      "passed": true
+    },
+    {
+      "name": "Hidden category disappears from public page",
+      "passed": true
+    },
+    {
+      "name": "Invalid slug is rejected",
+      "passed": true
+    },
+    {
+      "name": "Unconnected enquiry delivery returns an honest unavailable state",
+      "passed": true
+    }
+  ]
+}

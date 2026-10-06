@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {readFile,writeFile} from 'node:fs/promises';
+const base='http://localhost:5173';
+const report=[];
+async function check(name,fn){await fn();report.push({name,passed:true});}
+const login=await fetch(base+'/signin-with-chatgpt?return_to=/admin',{redirect:'manual'});
+const cookie=login.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');
+assert.ok(cookie);
+const headers={Cookie:cookie,Origin:base,'Content-Type':'application/json'};
+const id='qa-verification-category';
+const entry={id,type:'categories',slug:'qa-verification-category',title:'QA verification category',excerpt:'Temporary local verification entry.',body:'This entry validates draft, publishing and hiding.',image:'',category:'Verification',status:'draft',meta:'{}',position:9999};
+async function save(value,extra={}){return fetch(base+'/api/cms/content',{method:'POST',headers:{...headers,...extra},body:JSON.stringify(value)})}
+await check('Anonymous content access is rejected',async()=>assert.equal((await fetch(base+'/api/cms/content?type=categories')).status,403));
+await check('Cross-origin mutation is rejected',async()=>assert.equal((await save(entry,{Origin:'https://example.invalid'})).status,403));
+await check('Draft creation succeeds',async()=>assert.equal((await save(entry)).status,200));
+await check('Draft persists after a fresh read',async()=>{const r=await fetch(base+'/api/cms/content?type=categories',{headers:{Cookie:cookie}});const d=await r.json();assert.equal(d.records.find(r=>r.id===id)?.status,'draft')});
+await check('Draft is excluded from public page',async()=>assert.ok(!(await (await fetch(base+'/services/procurement-general-supplies')).text()).includes(entry.title)));
+const form=new FormData();form.append('file',new Blob([await readFile('public/assets/zolig-logo.png')],{type:'image/png'}),'logo.png');
+await check('Image upload succeeds',async()=>{const r=await fetch(base+'/api/cms/upload',{method:'POST',headers:{Cookie:cookie,Origin:base},body:form});assert.equal(r.status,200);entry.image=(await r.json()).url;assert.ok(entry.image.startsWith('/api/media/'))});
+await check('Unpublished image is private',async()=>assert.equal((await fetch(base+entry.image)).status,404));
+await check('Administrator can preview uploaded image',async()=>assert.equal((await fetch(base+entry.image,{headers:{Cookie:cookie}})).status,200));
+entry.status='published';
+await check('Publication succeeds',async()=>assert.equal((await save(entry)).status,200));
+await check('Published category appears on public page',async()=>assert.ok((await (await fetch(base+'/services/procurement-general-supplies')).text()).includes(entry.title)));
+await check('Published image is publicly available',async()=>assert.equal((await fetch(base+entry.image)).status,200));
+entry.status='archived';
+await check('Hiding succeeds',async()=>assert.equal((await save(entry)).status,200));
+await check('Hidden category disappears from public page',async()=>assert.ok(!(await (await fetch(base+'/services/procurement-general-supplies')).text()).includes(entry.title)));
+await check('Invalid slug is rejected',async()=>assert.equal((await save({...entry,slug:'../../invalid'})).status,400));
+await check('Unconnected enquiry delivery returns an honest unavailable state',async()=>{const r=await fetch(base+'/api/enquiry',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:JSON.stringify({name:'Local verification',email:'verification@example.com',phone:'',organisation:'',category:'General enquiry',message:'Local verification of unconfigured email delivery.',website:''})});assert.equal(r.status,503)});
+await writeFile('verification/cms-results.json',JSON.stringify({checkedAt:new Date().toISOString(),checks:report},null,2));
+console.log(JSON.stringify({passed:report.length,total:report.length}));

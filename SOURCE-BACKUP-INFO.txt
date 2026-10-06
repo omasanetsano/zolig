@@ -1,0 +1,13 @@
+ZOLIG Consulting Limited website source backup
+Commit: 7264bd4
+Original export: 2026-09-27
+Local update: 2026-10-05
+Status: CURRENT LOCAL WORKING COPY
+Update: Distinct page heading icons and page-specific icon accents.
+Live site: https://zolig-consulting-fresh.etsanoomasanjuwa.chatgpt.site
+
+Run locally:
+1. Install Node.js
+2. Run npm install
+3. Run npm run dev
+
