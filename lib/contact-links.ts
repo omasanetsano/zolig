@@ -17,9 +17,7 @@ export const contactLinksSchema=z.object({
 export type ContactLinks=z.infer<typeof contactLinksSchema>;
 export const emptyContactLinks:ContactLinks={whatsapp:'',linkedin:'',facebook:'',instagram:'',x:''};
 export async function getContactLinks():Promise<ContactLinks>{
-  const row=await database().prepare('SELECT value FROM cms_state WHERE key = ?').bind('contact_links').first<{value:string}>();
-  if(!row)return emptyContactLinks;
-  try{const parsed=contactLinksSchema.safeParse(JSON.parse(row.value));return parsed.success?parsed.data:emptyContactLinks;}catch{return emptyContactLinks;}
+  try{const row=await database().prepare('SELECT value FROM cms_state WHERE key = ?').bind('contact_links').first<{value:string}>();if(!row)return emptyContactLinks;const parsed=contactLinksSchema.safeParse(JSON.parse(row.value));return parsed.success?parsed.data:emptyContactLinks;}catch{return emptyContactLinks;}
 }
 export function contactLinkItems(links:ContactLinks){
   return [

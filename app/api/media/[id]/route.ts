@@ -1,4 +1,8 @@
-import {env} from 'cloudflare:workers';
-import {database} from '@/db';
-import {cmsUser} from '@/lib/cms-auth';
-export async function GET(request:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;if(!/^[a-f0-9-]{36}$/.test(id))return new Response('Not found',{status:404});try{const record=await database().prepare('SELECT id FROM content WHERE image = ? AND status = ? LIMIT 1').bind('/api/media/'+id,'published').first();if(!record&&!await cmsUser())return new Response('Not found',{status:404});const object=await (env as {BUCKET:R2Bucket}).BUCKET.get(id);if(!object)return new Response('Not found',{status:404});return new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','Cache-Control':record?'public, max-age=3600':'private, no-store','X-Content-Type-Options':'nosniff'}})}catch{return new Response('Image unavailable',{status:503})}}
+export const runtime='nodejs';
+
+export async function GET(){
+  return new Response('Media storage has not been configured for this deployment.',{
+    status:404,
+    headers:{'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'},
+  });
+}

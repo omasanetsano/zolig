@@ -1,3 +1,8 @@
-import {env} from 'cloudflare:workers';
 import {cmsUser} from '@/lib/cms-auth';
-export async function POST(request:Request){if(!await cmsUser())return Response.json({error:'Administrator access is required.'},{status:403});if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Invalid request origin.'},{status:403});if(Number(request.headers.get('content-length')||0)>9*1024*1024)return Response.json({error:'Choose an image smaller than 8 MB.'},{status:413});try{const form=await request.formData();const file=form.get('file');if(!(file instanceof File)||file.size>8*1024*1024||file.size===0)return Response.json({error:'Choose an image smaller than 8 MB.'},{status:400});const bytes=new Uint8Array(await file.arrayBuffer());const png=bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71;const jpg=bytes[0]===255&&bytes[1]===216&&bytes[2]===255;const webp=String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP';if(!png&&!jpg&&!webp)return Response.json({error:'Use a PNG, JPEG or WebP image.'},{status:400});const bucket=(env as {BUCKET?:R2Bucket}).BUCKET;if(!bucket)throw new Error('Unavailable');const id=crypto.randomUUID();await bucket.put(id,bytes,{httpMetadata:{contentType:png?'image/png':jpg?'image/jpeg':'image/webp'}});return Response.json({url:'/api/media/'+id})}catch{return Response.json({error:'The image could not be uploaded. Please try again.'},{status:503})}}
+
+export const runtime='nodejs';
+
+export async function POST(){
+  if(!await cmsUser())return Response.json({error:'Administrator access is required.'},{status:403});
+  return Response.json({error:'CMS uploads require a Vercel Blob integration. The public website is fully deployable without it.'},{status:503});
+}

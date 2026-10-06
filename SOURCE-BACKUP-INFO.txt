@@ -1,9 +1,9 @@
 ZOLIG Consulting Limited website source backup
 Commit: 7264bd4
 Original export: 2026-09-27
-Local update: 2026-10-05
+Local update: 2026-10-06
 Status: CURRENT LOCAL WORKING COPY
-Update: Distinct page heading icons and page-specific icon accents.
+Update: Distinct page heading icons, page-specific accents, and native Vercel deployment configuration.
 Live site: https://zolig-consulting-fresh.etsanoomasanjuwa.chatgpt.site
 
 Run locally:
